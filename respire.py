@@ -67,7 +67,6 @@ try:
 			result -= decrementationpeur
 		if result > 100 + maxtouravantfinangoisse :
 			result = 100 + maxtouravantfinangoisse
-		#os.system('say ' + str(result/10).split('.')[0])
 		print '%03d' % mouvement,
 		print '[' + '='*mouvement,
 		print ' '*(100-mouvement) + '] ',
