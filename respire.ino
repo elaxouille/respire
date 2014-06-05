@@ -3,13 +3,19 @@ Arduino Uno / RESPIRE / projet TVS
 Utilisation de la bibliothèque Stepper pour contrôler le moteur
 
 version alpha
-/!\ VERSION TEST === SURCHAUFFE /!\
-
+eteindre = envoyer "0" en serie
 ### T.V.S. ###
 
 
- */
+*/
 
+char recu[20];
+String reponse;
+int yeau = 0;
+int i;
+
+
+int vitesse = 60;
 #include <Stepper.h>
 
 int enA  = 3;  // Enable pin 1 on Motor Control Shield   
@@ -24,21 +30,42 @@ const int stepsPerRevolution = 200;
 Stepper myStepper(stepsPerRevolution, dirA, dirB);            
 
 void setup() {
-  myStepper.setSpeed(60); // 60 < n < ~120 (sinon pas assez fluide)
-
+  Serial.begin(9600);
+  Serial.println("Arduino OK");
+  myStepper.setSpeed(vitesse); // 60 < n < ~120
   // Allumage du moteur
   pinMode(enA, OUTPUT);
   digitalWrite (enA, HIGH);
-
   pinMode(enB, OUTPUT);
   digitalWrite (enB, HIGH);  
+  Serial.println("Moteur OK");
 }
 
 void loop() {
-  
-  for (int i = 0; i < 6; i++) {
-    myStepper.step(stepsPerRevolution*6);
-    myStepper.step(-stepsPerRevolution*6);
-  }
-  delay(12000);
+      myStepper.step(stepsPerRevolution*6);
+      myStepper.step(-stepsPerRevolution*6);
+      Serial.println("Moteur GO");
+      reponse = 0;
+      i = 0 ;
+      while ( Serial.available()>0 )      {
+            recu[i] = Serial.read();
+            reponse += recu[i];
+            i++;
+            delay(100);
+      }
+      if (i>0) {
+            Serial.println(reponse);
+            vitesse = reponse.toInt();
+            if (vitesse < 120 && vitesse >= 60) {
+              Serial.println("OK ca change");
+              myStepper.setSpeed(vitesse);
+            } else if (vitesse == 0) {
+              Serial.print("OK on arrete");
+              myStepper.setSpeed(vitesse);
+              digitalWrite(enA,LOW);
+              digitalWrite(enB,LOW);
+            } else {
+              Serial.println("pas bon"); 
+            }
+      }
 }
